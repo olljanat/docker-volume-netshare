@@ -1,0 +1,36 @@
+{
+    "description": "NFS/EFS/Samba/Ceph plugin for Docker",
+    "documentation": "https://netshare.containx.io",
+    "entrypoint": [
+        "\\docker-volume-netshare.exe"
+    ],
+    "env": [
+        {
+            "name": "DEBUG",
+            "settable": [
+                "value"
+            ],
+            "value": "0"
+        }
+    ],
+    "interface": {
+        "socket": "netshare",
+        "types": [
+            "docker.volumedriver/1.0"
+        ]
+    },
+    "mounts": [
+        {
+            "destination": "C:\\state",
+            "options": [
+                "rbind"
+            ],
+            "source": "C:\\ProgramData\\docker\\plugins",
+            "type": "bind"
+        }
+    ],
+    "network": {
+        "type": "host"
+    },
+    "propagatedmount": "C:\\volumes"
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"syscall"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/docker/go-plugins-helpers/sdk"
 	"github.com/docker/go-plugins-helpers/volume"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -259,14 +261,25 @@ func start(dt drivers.DriverType, driver volume.Driver) {
 		if addr == "" {
 			addr, _ = rootCmd.PersistentFlags().GetString(PortFlag)
 		}
-		// TODO: if platform == windows, use WindowsDefaultDaemonRootDir()
 		fmt.Println(h.ServeTCP(dt.String(), addr, "", nil))
 	} else {
 		socketName := os.Getenv(EnvSocketName)
 		if socketName == "" {
 			socketName = dt.String()
 		}
-		fmt.Println(h.ServeUnix(socketName, syscall.Getgid()))
+		if runtime.GOOS == "windows" {
+			config := sdk.WindowsPipeConfig{
+				// open, read, write permissions for everyone
+				// (uses Windows Security Descriptor Definition Language)
+				SecurityDescriptor: "D:(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FA;;;LA)(A;ID;FA;;;LS)",
+				InBufferSize:       4096,
+				OutBufferSize:      4096,
+			}
+
+			fmt.Println(h.ServeWindows("//./pipe/"+socketName, "netshare", sdk.WindowsDefaultDaemonRootDir(), &config))
+		} else {
+			fmt.Println(h.ServeUnix(socketName, syscall.Getgid()))
+		}
 	}
 }
 
