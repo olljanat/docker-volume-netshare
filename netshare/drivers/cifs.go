@@ -95,6 +95,8 @@ func (c CifsDriver) Mount(r *volume.MountRequest) (*volume.MountResponse, error)
 	if c.mountm.HasMount(r.Name) && c.mountm.Count(r.Name) > 0 {
 		log.Infof("Using existing CIFS volume mount: %s", hostdir)
 		c.mountm.Increment(r.Name)
+
+		// FixMe:
 		if err := run(fmt.Sprintf("mountpoint -q %s", hostdir)); err != nil {
 			log.Infof("Existing CIFS volume not mounted, force remount.")
 		} else {
@@ -142,6 +144,7 @@ func (c CifsDriver) Unmount(r *volume.UnmountRequest) error {
 
 	log.Infof("Unmounting volume %s from %s", source, hostdir)
 
+	// FixMe:
 	if err := run(fmt.Sprintf("umount %s", hostdir)); err != nil {
 		return err
 	}

@@ -61,6 +61,7 @@ func mountpoint(elem ...string) string {
 }
 
 func run(cmd string) error {
+	// FixME: No SH on Windows...
 	if out, err := exec.Command("sh", "-c", cmd).CombinedOutput(); err != nil {
 		log.Println(string(out))
 		return err
